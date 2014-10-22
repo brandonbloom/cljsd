@@ -3,6 +3,8 @@
 This project doesn't do anything yet, but it may someday be a basis for simpler
 and less painful ClojureScript tooling.
 
+Born of my frustration with `cljsbuild`, especially `lein cljsbuild auto`.
+
 
 # Design
 
@@ -21,6 +23,12 @@ to web requests, rather than filesystem changes.
 REPL based development with incremental evaluation of forms and file should be
 the preferred way of working. Refreshing the browser should be only slightly
 less rare than restarting my Clojure/JVM REPL.
+
+## Save != Evaluate
+
+A great deal of power and flexibility comes from separating "save to disk" from
+"evaluate in current environment". Auto-building with cljsbuild conflates the
+two, and auto-loading with [Figwheel][1] exacerbates the problem.
 
 ## Minimal Configuration
 
@@ -50,3 +58,6 @@ Copyright © 2014 Brandon Bloom
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
+
+
+[1]: https://github.com/bhauman/lein-figwheel

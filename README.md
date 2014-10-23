@@ -13,7 +13,7 @@ Born of my frustration with `cljsbuild`, especially `lein cljsbuild auto`.
 I'm not interested running on Node or other non-web-app use cases. A browser
 REPL should always be available.
 
-## Build on Demand during Development
+## Build on Demand During Development
 
 When I refresh my browser, I want to be confident that I'm getting the latest
 output. I don't want to wait before pressing refresh. I don't want to wait for
@@ -41,7 +41,7 @@ Only three values are required:
 Original cljs, source maps, unoptimized js, and optimized js are all
 world-visible. Optimization is requested by requesting `.min.js` files.
 
-## Library, not Framework
+## Library, Not Framework
 
 A very small API will be provided for the following tasks:
 
@@ -50,6 +50,12 @@ A very small API will be provided for the following tasks:
 - Connect to a browser REPL
 
 No Lein integration will be provided.
+
+## Servable Output Directory
+
+The cljsd middlewhere should only be required during development. In production
+builds, it should suffice to simply publish the entire output directory with a
+standard web server.
 
 
 ## License

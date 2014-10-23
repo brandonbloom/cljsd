@@ -1,11 +1,13 @@
 (ns cljsd.example.server.main
   (:require [cljsd.core :as cljsd]
+            [ring.middleware.file :refer (wrap-file)]
+            [ring.middleware.file-info :refer (wrap-file-info)]
             [ring.adapter.jetty :refer (run-jetty)]))
 
 ;;XXX hard coded paths
 (def cljsd-config {:mount "/app/"
                    :src "/Users/brandon/Projects/cljsd/example/src/client/"
-                   :dest "/Users/brandon/Projects/cljsd/example/public/js/"})
+                   :dest "/Users/brandon/Projects/cljsd/example/out/"})
 
 (def handler (-> (fn [request]
                    (prn (:uri request))
@@ -13,7 +15,9 @@
                      {:status 200
                       :headers {"Content-Type" "text/html"}
                       :body "Hello World"}))
-                 (cljsd/wrap cljsd-config)))
+                 (cljsd/wrap cljsd-config)
+                 (wrap-file "/Users/brandon/Projects/cljsd/example/public/")
+                 wrap-file-info))
 
 (defonce jetty (atom nil))
 

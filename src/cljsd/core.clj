@@ -1,17 +1,35 @@
 (ns cljsd.core
   (:require [clojure.string :as s]
+            [clojure.java.io :as io]
             [cljs.env]
-            [cljs.compiler :as cljsc]
-            [ring.util.response :refer [file-response]])
-  (:import [java.util.regex Pattern]))
+            [cljs.closure :as cljsc]
+            [ring.util.response :refer [file-response resource-response]])
+  (:import [java.util.regex Pattern]
+           [java.io File]))
 
-(defn- unoptimized [path src dest]
+(defn- unoptimized [{:keys [src dest] :as config} path]
   (let [cljs-path (str src (s/replace path #"\.js$" ".cljs"))
         js-path (str dest path)
-        opts {:output-dir dest}
-        {:keys [file]} (cljs.env/ensure
-                         (cljsc/compile-file cljs-path js-path opts))]
-    (file-response (.getPath ^java.io.File file))))
+        opts {:output-dir dest}]
+    (or ;; ClojureScript
+        (let [^File cljs-file (File. cljs-path)]
+          (when (.exists cljs-file)
+            (cljsc/build cljs-file {:optimizations :none
+                                    :output-to js-path
+                                    :output-dir dest})
+            (file-response js-path)))
+        ;; JavaScript file
+        (let [^File js-file (File. js-path)]
+          (when (.exists js-file)
+            (file-response js-path)))
+        ;; Javascript resource
+        ;;TODO Do I need/want this? cljsc/build copies goog files.
+        (when-let [js-resource (io/resource path)]
+          (resource-response path))
+        ;; Not found
+        {:status 404
+         :headers {"Content-Type" "text/plain"}
+         :body (str "No cljs or js found for " path)})))
 
 (defn wrap [handler {:keys [mount src dest] :as config}]
   (assert (and (string? mount)
@@ -22,9 +40,9 @@
       (if-let [[_ path] (re-find path-re (:uri request))]
         (cond
           ;TODO (.endsWith path ".min.js") (optimized ...)
-          (.endsWith path ".js") (unoptimized path src dest)
-          :else (handler request)
-        (handler request))))))
+          (.endsWith path ".js") (unoptimized config path)
+          :else (handler request))
+        (handler request)))))
 
 ;TODO prebuild
 
